@@ -1,0 +1,130 @@
+import api from '@/services/api'
+import { useLoadingStore } from '@/stores/useLoading'
+import { useUserStore } from '@/stores/user'
+import { createRouter, createWebHistory } from 'vue-router'
+
+// Lazy load
+const HomeView = () => import('@/views/HomeView.vue')
+const LoginView = () => import('@/views/LoginView.vue')
+const RegisterView = () => import('@/views/RegisterView.vue')
+const DashboardView = () => import('@/views/DashboardView.vue')
+const NotFoundView = () => import('@/views/NotFoundView.vue')
+const AboutView = () => import('@/views/AboutView.vue')
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.API_BASE_URL),
+  routes: [
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notFound',
+      component: NotFoundView,
+    },
+    {
+      path: '/',
+      name: 'home',
+      component: HomeView,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView,
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: DashboardView,
+      meta: { requiresAuth: true },
+    },
+  ],
+})
+
+// Helper: Cek session
+async function checkSession() {
+  try {
+    const res = await api.get('/api/auth/verify')
+    return res.data?.authenticated === true
+  } catch {
+    return false
+  }
+}
+
+// Helper: Try refresh token
+async function tryRefreshToken() {
+  try {
+    const res = await api.post('/api/auth/refresh')
+    return res.data?.authenticated === true
+  } catch {
+    return false
+  }
+}
+
+// Middleware global
+router.beforeEach(async (to, from) => {
+  const loadingStore = useLoadingStore()
+  const userStore = useUserStore()
+
+  // Set loading
+  loadingStore.setLoading(true)
+
+  // Cek session untuk pertama kali
+  const isAuth = await checkSession()
+  if (isAuth) {
+    // User authenticated, fetch user data
+    await userStore.fetchUser()
+  }
+
+  // Fetch user data jika belum ada dan butuh auth
+  if (to.meta.requiresAuth && !userStore.isInitialized) {
+    const isAuth = await checkSession()
+
+    if (isAuth) {
+      // User authenticated, fetch user data
+      await userStore.fetchUser()
+    } else {
+      // Try refresh token
+      const isRefreshed = await tryRefreshToken()
+      if (isRefreshed) {
+        await userStore.fetchUser()
+      } else {
+        // Redirect to login
+        userStore.clearUser()
+        return { path: '/login', query: { redirect: to.fullPath } }
+      }
+    }
+  }
+
+  // Halaman guest only tapi user sudah login
+  if (to.meta.guestOnly && userStore.isAuthenticated) {
+    const isAuth = await checkSession()
+
+    if (isAuth) {
+      return { path: '/dashboard' }
+    }
+  }
+
+  // Halaman requiresAuth tapi user belum login
+  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+})
+
+router.afterEach(() => {
+  const loadingStore = useLoadingStore()
+
+  // Set loading
+  loadingStore.setLoading(false)
+})
+
+export default router
