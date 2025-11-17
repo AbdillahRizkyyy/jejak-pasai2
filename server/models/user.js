@@ -5,10 +5,10 @@ module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       // Relasi: User bisa punya banyak artikel sejarah
-      User.hasMany(models.ArtikelSejarah, {
-        foreignKey: 'penulis_id',
-        onDelete: 'SET NULL',
-      });
+      // User.hasMany(models.ArtikelSejarah, {
+      //   foreignKey: 'penulis_id',
+      //   onDelete: 'SET NULL',
+      // });
     }
   }
 

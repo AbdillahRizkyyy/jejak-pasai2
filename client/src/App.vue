@@ -1,28 +1,11 @@
-<script setup lang="ts">
-import LoadingGlobal from '@/components/Loading/LoadingGlobal.vue'
-import { useDarkMode } from '@/composables/useDarkMode'
-import { useHead } from '@vueuse/head'
+<script setup>
 import { RouterView } from 'vue-router'
-import { Toaster } from 'vue-sonner'
-
-const { isDark } = useDarkMode()
-
-// Setup head
-useHead({
-  title: 'My App',
-  link: [{ rel: 'icon', href: '/favicon.ico' }],
-  meta: [{ name: 'description', content: 'My awesome Vue app' }],
-})
+import Header from '@/components/Header.vue'
 </script>
 
 <template>
-  <LoadingGlobal />
-  <Toaster
-    position="top-right"
-    richColors
-    :duration="3000"
-    :theme="isDark ? 'dark' : 'light'"
-    closeButtonPosition="top-right"
-  />
-  <RouterView />
+  <div class="bg-[#0A3D36] min-h-screen">
+    <Header />
+    <RouterView />
+  </div>
 </template>

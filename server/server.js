@@ -157,6 +157,8 @@ const arr_router = [
   "auth",
   "user",
   "device",
+  "destinasi",
+  "galeri",
   // tambahkan router lain di sini
 ];
 
