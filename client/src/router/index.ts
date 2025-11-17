@@ -10,6 +10,7 @@ const RegisterView = () => import('@/views/RegisterView.vue')
 const DashboardView = () => import('@/views/DashboardView.vue')
 const NotFoundView = () => import('@/views/NotFoundView.vue')
 const AboutView = () => import('@/views/AboutView.vue')
+const HistoryView = () => import('@/views/HistoryView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.API_BASE_URL),
@@ -28,6 +29,26 @@ const router = createRouter({
       path: '/about',
       name: 'about',
       component: AboutView,
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: HistoryView,
+    },
+    {
+      path: '/location',
+      name: 'location',
+      component: () => import('@/views/LocationView.vue'),
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('@/views/ContactView.vue'),
+    },
+    {
+      path: '/gallery',
+      name: 'gallery',
+      component: () => import('@/views/GalleryView.vue'),
     },
     {
       path: '/login',
